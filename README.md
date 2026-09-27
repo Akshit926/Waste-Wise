@@ -64,17 +64,24 @@ Clicking **"Create Collection Batch"** bundles the requests under Batch `B-003`,
 
 ## 3. Key Features
 
+* **Authentication & Role-Based Access:**
+  * **Demo Quick-Access:** One-click instant login for jury (`citizen@wastewise.demo` & `admin@wastewise.demo`).
+  * **Citizen & Admin Profiles:** Editable contact details, assigned municipal zones, and saved pickup location manager.
+  * **Route Protection:** Citizen and Operations views isolated with seamless jury role switching.
+  * **Contextual Notification Center:** Bell notification center with unread counters and actionable alerts.
 * **Citizen Portal:**
   * **Editorial Dashboard:** Shows upcoming pickup with linear milestone progress, recent requests, and cumulative environmental impact ($24.5\text{ kg}$ diverted, $9.8\text{ kg CO}_2$ avoided).
   * **Smart Triage Tool:** Natural language keyword parsing + 8 one-click category selectors.
-  * **Multi-Step Scheduling:** Category ➔ Item details ➔ Quantity ➔ Pune Area selection ➔ Slot confirmation.
+  * **Multi-Step Scheduling:** Category ➔ Item details ➔ Quantity ➔ Saved Location selector / Pune Area ➔ Slot confirmation.
   * **Live Tracking & Waste Journey:** Full downstream chain of custody (Doorstep custody verification ➔ Sorting ➔ Certified circular processing at Chakan GreenTech Park).
+  * **Self-Service Actions:** One-click pickup rescheduling and structured cancellation with reason capture.
 * **Municipal Operations Command Center:**
   * **Collection Health Card:** Live schedule compliance ratio ($83\%$ on schedule) and urgent request alerts.
   * **Sector Demand Breakdown:** Sector pickups for Wakad, Hinjewadi, Baner, and Aundh.
+  * **Operational Insights:** Live heuristics analyzing stream bottlenecks, high-priority queue density, and cluster recommendations.
   * **Smart Batching Engine:** Real-time clustering opportunities with one-click batch dispatch.
   * **Operations Table & Side Drawer:** Multi-filter by priority, status, category, and area. Clicking any row opens a slide-out drawer with explainable priority scores and quick status updates.
-  * **Analytics & Visualizations:** Purposeful Recharts graphs answering stream distribution, sector demand, and operational lifecycle funnel.
+  * **Analytics & Performance Metrics:** Purposeful Recharts graphs answering stream distribution, sector demand, on-time collection rate ($94.2\%$), and average completion turnaround.
 
 ---
 

@@ -15,6 +15,7 @@ import {
 import confetti from 'canvas-confetti';
 import { api } from '../services/api';
 import { WasteCategory, PickupRequest } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface SchedulePickupPageProps {
   initialData?: {
@@ -32,6 +33,7 @@ export const SchedulePickupPage: React.FC<SchedulePickupPageProps> = ({
   onSuccess,
   onCancel
 }) => {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [createdRequest, setCreatedRequest] = useState<PickupRequest | null>(null);
@@ -45,13 +47,15 @@ export const SchedulePickupPage: React.FC<SchedulePickupPageProps> = ({
   const [quantityUnit, setQuantityUnit] = useState('items');
 
   // Customer & Location
-  const [customerName, setCustomerName] = useState('Akshit Sharma');
-  const [phone, setPhone] = useState('+91 98221 00987');
-  const [email, setEmail] = useState('akshit@wastewise.io');
-  const [address, setAddress] = useState('Flat 402, Rohan Tarang, Datta Mandir Road');
-  const [area, setArea] = useState('Wakad');
-  const [landmark, setLandmark] = useState('Near Ginger Hotel');
-  const [pinCode, setPinCode] = useState('411057');
+  const defaultLoc = user?.savedLocations?.find(l => l.isDefault) || user?.savedLocations?.[0];
+  const [customerName, setCustomerName] = useState(user?.name || 'Akshit Sharma');
+  const [phone, setPhone] = useState(user?.phone || '+91 98221 00987');
+  const [email, setEmail] = useState(user?.email || 'akshit@wastewise.io');
+  const [address, setAddress] = useState(defaultLoc?.address || 'Flat 402, Rohan Tarang, Datta Mandir Road');
+  const [area, setArea] = useState(defaultLoc?.area || user?.area || 'Wakad');
+  const [landmark, setLandmark] = useState(defaultLoc?.landmark || 'Near Ginger Hotel');
+  const [pinCode, setPinCode] = useState(defaultLoc?.pinCode || '411057');
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(defaultLoc?.id || null);
 
   // Schedule
   const [pickupDate, setPickupDate] = useState('2026-09-28');
@@ -284,6 +288,49 @@ export const SchedulePickupPage: React.FC<SchedulePickupPageProps> = ({
               <h3 className="text-sm font-semibold text-slate-900">Step 4: Pickup Address in Pune</h3>
               <p className="text-xs text-slate-500">Enables deterministic route clustering with nearby pickups.</p>
             </div>
+
+            {/* Saved Locations Quick Selector */}
+            {user?.savedLocations && user.savedLocations.length > 0 && (
+              <div className="p-3 bg-forest-50/70 border border-forest-200/80 rounded-xl space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-forest-900">
+                  <MapPin className="w-3.5 h-3.5 text-forest-700" />
+                  <span>Choose from Saved Locations</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {user.savedLocations.map((loc) => {
+                    const isSelected = selectedLocationId === loc.id;
+                    return (
+                      <button
+                        key={loc.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedLocationId(loc.id);
+                          setAddress(loc.address);
+                          setArea(loc.area);
+                          setLandmark(loc.landmark || '');
+                          if (loc.pinCode) setPinCode(loc.pinCode);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${
+                          isSelected
+                            ? 'bg-forest-800 text-white border-forest-800 shadow-2xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span>{loc.label}</span>
+                        <span className={`text-[10px] ${isSelected ? 'text-emerald-200' : 'text-slate-400'}`}>
+                          ({loc.area})
+                        </span>
+                        {loc.isDefault && (
+                          <span className={`text-[9px] px-1 py-0.2 rounded font-bold uppercase ${isSelected ? 'bg-forest-900 text-emerald-300' : 'bg-forest-100 text-forest-800'}`}>
+                            Default
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-slate-700 mb-1">Address / Society</label>

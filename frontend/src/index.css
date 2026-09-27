@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,15 +6,49 @@
 
 @layer base {
   body {
-    @apply bg-[#F8F9FA] text-[#0F172A] font-sans antialiased selection:bg-forest-100 selection:text-forest-900;
+    @apply bg-[#F4F6F4] text-[#0F172A] font-sans antialiased;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    @apply bg-forest-100 text-forest-900;
+  }
+
+  /* Improve focus visibility for accessibility */
+  :focus-visible {
+    outline: 2px solid #1B4332;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Clean active nav indicator helper */
+  .nav-active-indicator {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 1.25rem;
+    background-color: #1B4332;
+    border-radius: 2px 0 0 2px;
+  }
+}
+
+@layer utilities {
+  /* Background opacity variant for forest-800 */
+  .bg-forest-8 {
+    background-color: rgb(27 67 50 / 0.08);
   }
 }
 
 /* Custom minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -28,4 +62,24 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Smooth page transitions */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: fade-in 0.15s ease-out;
+}
+
+/* Drawer animation */
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.drawer-enter {
+  animation: slide-in-right 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }

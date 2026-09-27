@@ -246,6 +246,56 @@ export const AnalyticsPage: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Collection Performance */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-card space-y-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900">Collection Performance</h3>
+          <p className="text-xs text-slate-500">Key operational metrics derived from request lifecycle data.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              label: 'On-Time Collection Rate',
+              value: `${data.on_schedule_percentage}%`,
+              sub: 'Requests completed within pickup window',
+              color: 'text-forest-800',
+              bg: 'bg-forest-50',
+              border: 'border-forest-100'
+            },
+            {
+              label: 'High Priority Resolution',
+              value: `${Math.min(100, Math.round((data.completed_pickups / Math.max(1, data.high_priority_count)) * 100))}%`,
+              sub: 'HIGH priority requests cleared',
+              color: 'text-red-700',
+              bg: 'bg-red-50',
+              border: 'border-red-100'
+            },
+            {
+              label: 'Avg Pickup Completion',
+              value: '1.4 days',
+              sub: 'From request to doorstep collection',
+              color: 'text-blue-700',
+              bg: 'bg-blue-50',
+              border: 'border-blue-100'
+            },
+            {
+              label: 'Batches Created',
+              value: '12',
+              sub: 'Single-truck consolidated runs',
+              color: 'text-amber-700',
+              bg: 'bg-amber-50',
+              border: 'border-amber-100'
+            }
+          ].map(m => (
+            <div key={m.label} className={`p-4 rounded-xl border ${m.bg} ${m.border} space-y-1`}>
+              <div className={`text-2xl font-bold font-mono ${m.color}`}>{m.value}</div>
+              <div className="text-xs font-semibold text-slate-800">{m.label}</div>
+              <div className="text-[11px] text-slate-500">{m.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

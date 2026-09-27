@@ -13,7 +13,8 @@ import {
   Cpu,
   BarChart3,
   RefreshCw,
-  Search
+  Search,
+  Lightbulb
 } from 'lucide-react';
 import { api } from '../services/api';
 import { PickupRequest, BatchRecommendation, AnalyticsOverview } from '../types';
@@ -68,6 +69,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate, onOp
   const needsAttention = requests.filter(
     r => r.priority === 'HIGH' || r.waiting_days >= 2
   );
+
+  // Compute operational insights from live data
+  const computeInsights = () => {
+    const insights: string[] = [];
+    // Area demand
+    const areaCounts: Record<string, number> = {};
+    requests.forEach(r => { areaCounts[r.area] = (areaCounts[r.area] || 0) + 1; });
+    const topArea = Object.entries(areaCounts).sort((a, b) => b[1] - a[1])[0];
+    if (topArea) insights.push(`${topArea[0]} has the highest pickup demand (${topArea[1]} requests today).`);
+    // High priority
+    const high = requests.filter(r => r.priority === 'HIGH' && !['Processed','Cancelled'].includes(r.status));
+    if (high.length > 0) insights.push(`${high.length} high-priority request${high.length !== 1 ? 's' : ''} require immediate attention.`);
+    // Category distribution
+    const cats: Record<string, number> = {};
+    requests.forEach(r => { cats[r.category] = (cats[r.category] || 0) + 1; });
+    const topCat = Object.entries(cats).sort((a, b) => b[1] - a[1])[0];
+    if (topCat) {
+      const pct = Math.round((topCat[1] / requests.length) * 100);
+      insights.push(`${topCat[0]} represents ${pct}% of active requests.`);
+    }
+    // Batch opportunities
+    const batchable = requests.filter(r => !r.batch_id && !['Processed','Cancelled','Collected'].includes(r.status));
+    if (recommendations.length > 0) {
+      insights.push(`${recommendations.reduce((s, r) => s + r.requests_count, 0)} nearby requests can be consolidated into ${recommendations.length} optimized collection run${recommendations.length !== 1 ? 's' : ''}.`);
+    } else if (batchable.length > 0) {
+      insights.push(`${batchable.length} requests are pending batch assignment.`);
+    }
+    return insights;
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
@@ -409,6 +439,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate, onOp
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      {/* OPERATIONAL INSIGHTS */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+            <Lightbulb className="w-4 h-4 text-amber-500" />
+            Operational Insights
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">Generated from live request data.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {computeInsights().map((insight, i) => (
+            <div key={i} className="bg-white rounded-xl border border-slate-200 p-4 flex items-start gap-3">
+              <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+              </div>
+              <p className="text-xs text-slate-700 leading-relaxed">{insight}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

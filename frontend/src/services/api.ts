@@ -983,6 +983,41 @@ export const api = {
     return req;
   },
 
+  async rescheduleRequest(id: string, pickup_date: string, pickup_slot: string, reason?: string): Promise<PickupRequest | null> {
+    try {
+      const res = await fetch(`${API_BASE}/requests/${id}/reschedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pickup_date, pickup_slot, reason })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        const list = getLocalRequests().map(r => r.id === id ? updated : r);
+        saveLocalRequests(list);
+        return updated;
+      }
+    } catch (e) {
+      console.warn("Backend API reschedule unavailable, updating locally", e);
+    }
+
+    const list = getLocalRequests();
+    const req = list.find(r => r.id === id);
+    if (!req) return null;
+
+    req.pickup_date = pickup_date;
+    req.pickup_slot = pickup_slot;
+    const nowStr = "27 Sept 2026, 01:30 PM";
+    req.journey.push({
+      step: "Pickup Rescheduled",
+      timestamp: nowStr,
+      status: "completed",
+      description: `Pickup rescheduled to ${pickup_date} (${pickup_slot}). Reason: ${reason || 'Citizen requested time adjustment'}.`
+    });
+
+    saveLocalRequests([...list]);
+    return req;
+  },
+
   async getBatches(): Promise<CollectionBatch[]> {
     try {
       const res = await fetch(`${API_BASE}/batches`);

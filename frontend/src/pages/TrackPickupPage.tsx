@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   Search,
   Package,
-  Layers
+  Layers,
+  X
 } from 'lucide-react';
 import { api } from '../services/api';
 import { PickupRequest } from '../types';
@@ -21,15 +22,24 @@ import { WasteJourneyTimeline } from '../components/WasteJourneyTimeline';
 interface TrackPickupPageProps {
   initialRequestId?: string | null;
   onNavigate: (page: string) => void;
+  onToast?: (msg: string, type?: 'success' | 'warning' | 'info') => void;
 }
 
 export const TrackPickupPage: React.FC<TrackPickupPageProps> = ({
   initialRequestId,
-  onNavigate
+  onNavigate,
+  onToast
 }) => {
   const [requests, setRequests] = useState<PickupRequest[]>([]);
   const [selectedId, setSelectedId] = useState<string>(initialRequestId || 'WW1042');
   const [loading, setLoading] = useState(true);
+
+  // Reschedule state
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [newDate, setNewDate] = useState('2026-09-29');
+  const [newSlot, setNewSlot] = useState('04:00 PM - 06:00 PM');
+  const [rescheduleReason, setRescheduleReason] = useState('Schedule conflict / away from home');
+  const [rescheduling, setRescheduling] = useState(false);
 
   useEffect(() => {
     loadRequests();
@@ -48,6 +58,26 @@ export const TrackPickupPage: React.FC<TrackPickupPageProps> = ({
   };
 
   const currentRequest = requests.find(r => r.id === selectedId) || requests[0];
+
+  const handleConfirmReschedule = async () => {
+    if (!currentRequest) return;
+    setRescheduling(true);
+    try {
+      const updated = await api.rescheduleRequest(currentRequest.id, newDate, newSlot, rescheduleReason);
+      if (updated) {
+        setRequests(prev => prev.map(r => r.id === updated.id ? updated : r));
+        onToast?.(`Pickup #${currentRequest.id} rescheduled to ${newDate} (${newSlot}).`, 'success');
+      }
+      setIsRescheduleOpen(false);
+    } catch (e) {
+      console.error(e);
+      onToast?.('Failed to reschedule pickup. Please try again.', 'warning');
+    } finally {
+      setRescheduling(false);
+    }
+  };
+
+  const canReschedule = currentRequest && ['Requested', 'Reviewed', 'Assigned', 'Scheduled'].includes(currentRequest.status);
 
   const standardTimeline = [
     { title: 'Request Submitted', desc: 'Received via WasteWise Triage.' },
@@ -139,13 +169,29 @@ export const TrackPickupPage: React.FC<TrackPickupPageProps> = ({
             </h2>
           </div>
 
-          {currentRequest.batch_id && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-forest-50 border border-forest-200 rounded-lg text-xs">
-              <Layers className="w-3.5 h-3.5 text-forest-700" />
-              <span className="text-slate-600">Assigned Batch:</span>
-              <span className="font-semibold text-forest-900 font-mono">{currentRequest.batch_id}</span>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {currentRequest.batch_id && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-forest-50 border border-forest-200 rounded-lg text-xs">
+                <Layers className="w-3.5 h-3.5 text-forest-700" />
+                <span className="text-slate-600">Assigned Batch:</span>
+                <span className="font-semibold text-forest-900 font-mono">{currentRequest.batch_id}</span>
+              </div>
+            )}
+            {canReschedule && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewDate(currentRequest.pickup_date);
+                  setNewSlot(currentRequest.pickup_slot);
+                  setIsRescheduleOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+              >
+                <Clock className="w-3.5 h-3.5 text-forest-700" />
+                <span>Reschedule Slot</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Key Operational Attributes */}
@@ -234,6 +280,85 @@ export const TrackPickupPage: React.FC<TrackPickupPageProps> = ({
 
       {/* Downstream Waste Journey Component */}
       <WasteJourneyTimeline request={currentRequest} />
+
+      {/* Reschedule Modal */}
+      {isRescheduleOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-forest-800">Change Collection Window</span>
+                <h3 className="text-base font-bold text-slate-900 mt-0.5">Reschedule #{currentRequest.id}</h3>
+              </div>
+              <button onClick={() => setIsRescheduleOpen(false)} className="text-slate-400 hover:text-slate-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-700 font-medium mb-1">New Pickup Date</label>
+                <input
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-medium mb-1">Preferred Time Window</label>
+                <select
+                  value={newSlot}
+                  onChange={(e) => setNewSlot(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-800 font-medium"
+                >
+                  <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
+                  <option value="11:00 AM - 01:00 PM">11:00 AM - 01:00 PM</option>
+                  <option value="02:00 PM - 04:00 PM">02:00 PM - 04:00 PM</option>
+                  <option value="04:00 PM - 06:00 PM">04:00 PM - 06:00 PM</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-medium mb-1">Reason for Adjustment</label>
+                <select
+                  value={rescheduleReason}
+                  onChange={(e) => setRescheduleReason(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-forest-800"
+                >
+                  <option value="Schedule conflict / away from home">Schedule conflict / away from home</option>
+                  <option value="Need more time to gather items">Need more time to gather items</option>
+                  <option value="Postponed household relocation">Postponed household relocation</option>
+                  <option value="Other convenience preference">Other convenience preference</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsRescheduleOpen(false)}
+                className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors"
+              >
+                Keep Current
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReschedule}
+                disabled={rescheduling}
+                className="flex-1 py-2 bg-forest-800 hover:bg-forest-900 text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                {rescheduling ? (
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  'Confirm Slot'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
