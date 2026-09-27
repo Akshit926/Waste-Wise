@@ -272,11 +272,9 @@ function AppRouter() {
       return (
         <div className="min-h-screen bg-[#F8F9FA] flex flex-col font-sans">
           <LandingPage
-            onNavigate={(page) => {
-              if (page === 'user-dashboard' || page === 'triage' || page === 'admin-dashboard') {
-                setShowLanding(false);
-                setAuthPage('login');
-              }
+            onNavigate={() => {
+              setShowLanding(false);
+              setAuthPage('login');
             }}
             onSelectRole={() => {
               setShowLanding(false);
