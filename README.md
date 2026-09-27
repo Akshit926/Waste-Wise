@@ -122,24 +122,33 @@ Waste-Wise/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── DemoBanner.tsx           # Role switcher & 2-min demo script modal
+│   │   │   ├── AppHeader.tsx            # Header with notification bell & user menu
 │   │   │   ├── Sidebar.tsx              # Clean civic-tech left navigation
+│   │   │   ├── Toast.tsx                # Actionable toast notification system
 │   │   │   ├── PriorityBadge.tsx        # Subtle priority pill
 │   │   │   ├── StatusBadge.tsx          # Status indicator tag
 │   │   │   ├── RequestDrawer.tsx        # Slide-out inspection & update panel
 │   │   │   └── WasteJourneyTimeline.tsx # Downstream recycling chain of custody
+│   │   ├── context/
+│   │   │   ├── AuthContext.tsx          # Role-based auth, demo logins & saved locations
+│   │   │   └── NotificationContext.tsx  # Dynamic contextual notification center
 │   │   ├── pages/
 │   │   │   ├── LandingPage.tsx          # Civic tech landing page
-│   │   │   ├── UserDashboard.tsx        # Editorial citizen overview
+│   │   │   ├── LoginPage.tsx            # Auth login with instant demo access buttons
+│   │   │   ├── RegisterPage.tsx         # Citizen registration & Pune area onboarding
+│   │   │   ├── AccessRestrictedPage.tsx # Role-guard unauthorized access page
+│   │   │   ├── ProfilePage.tsx          # Profile management & saved locations manager
+│   │   │   ├── UserDashboard.tsx        # Editorial citizen overview with cancel modal
 │   │   │   ├── WasteTriagePage.tsx      # Natural language triage interface
-│   │   │   ├── SchedulePickupPage.tsx   # 6-step pickup booking flow
-│   │   │   ├── TrackPickupPage.tsx      # Live milestone tracking
+│   │   │   ├── SchedulePickupPage.tsx   # 6-step booking flow with saved location picker
+│   │   │   ├── TrackPickupPage.tsx      # Live milestone tracking & slot reschedule modal
 │   │   │   ├── UserRequestsPage.tsx     # Citizen requests management
 │   │   │   ├── UserHistoryPage.tsx      # Downstream certificates & impact
-│   │   │   ├── AdminDashboard.tsx       # Operations command center
+│   │   │   ├── AdminDashboard.tsx       # Operations command center & live insights
 │   │   │   ├── SmartQueuePage.tsx       # Priority scoring & batching
 │   │   │   ├── AdminRequestsPage.tsx    # Filterable operations table
 │   │   │   ├── BatchesPage.tsx          # Vehicle route clusters
-│   │   │   └── AnalyticsPage.tsx        # Recharts visualizations
+│   │   │   └── AnalyticsPage.tsx        # Recharts visualizations & performance metrics
 │   │   ├── services/
 │   │   │   └── api.ts                   # Dual backend + offline resilient client
 │   │   ├── types.ts                     # TypeScript definitions
